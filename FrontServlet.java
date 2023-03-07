@@ -6,10 +6,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
-
+import etu1867.framework.*;
 
 public class FrontServlet extends HttpServlet {
+
+    HashMap<String,Mapping> MappingUrls;
+
     protected void processRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
     {
         PrintWriter out  = res.getWriter();
