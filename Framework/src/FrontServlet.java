@@ -52,6 +52,7 @@ public class FrontServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             
         }
     }
