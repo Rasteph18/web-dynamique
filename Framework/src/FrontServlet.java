@@ -17,6 +17,7 @@ import java.util.Map;
 
 import etu1867.framework.*;
 import utils.Utilitaire;
+import modelView.*;
 
 public class FrontServlet extends HttpServlet {
 
@@ -44,7 +45,7 @@ public class FrontServlet extends HttpServlet {
                     if(m.isAnnotationPresent(AnnotationMethod.class))
                     {
                         mapping = new Mapping();
-                        mapping.setClassName(cls.getSimpleName());
+                        mapping.setClassName(cls.getName());
                         mapping.setMethod(m.getName());
 
                         MappingUrls.put(m.getAnnotation(AnnotationMethod.class).url(), mapping);
@@ -62,14 +63,23 @@ public class FrontServlet extends HttpServlet {
         PrintWriter out  = res.getWriter();
         try {
             util = new Utilitaire();
-            out.print(util.getRessource(req)+"\n");
-            
-            for(Map.Entry m : MappingUrls.entrySet())
-            {
-                Mapping mapping = (Mapping)m.getValue();
-                out.print("\n\n url: " + m.getKey() + "\t class: " + mapping.getClassName() + "\n \t\t method: " + mapping.getMethod());   
+
+            String urlRessource = (String)util.getRessource(req);
+            out.print(urlRessource + "\n");
+
+
+            Mapping map = MappingUrls.get(urlRessource);
+
+            if(map == null){
+                throw new Exception("Introuvable!");
             }
-             
+
+            Class cl = Class.forName(map.getClassName());
+            Object o = cl.getDeclaredConstructor().newInstance();
+            ModelView modelvue = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+
+            RequestDispatcher dispatch = req.getRequestDispatcher(modelvue.getUrl());
+            dispatch.forward(req, res);
 
         } catch (Exception e) {
             e.printStackTrace(out);
