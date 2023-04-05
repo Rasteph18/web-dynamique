@@ -1,31 +1,26 @@
 package model;
 
-import java.sql.Date;
-
 import annotation.*;
+import modelView.*;
 
 
 public class Emp {
 
     String nom;
     String prenom;
-    Date dtn;
 
     public Emp()
     {
 
     }
 
-    @AnnotationMethod(url="get-All-Emp")
-    public void getAllEmp()
+    @AnnotationMethod(url="/getAllEmp")
+    public ModelView getAllEmp()
     {
+        ModelView modelView = new ModelView();
+        modelView.setUrl("allEmp.jsp");
 
-    }
-
-    @AnnotationMethod(url="add-Emp")
-    public void addEmp()
-    {
-
+        return modelView;
     }
 
 }
