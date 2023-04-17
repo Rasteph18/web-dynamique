@@ -76,10 +76,21 @@ public class FrontServlet extends HttpServlet {
 
             Class cl = Class.forName(map.getClassName());
             Object o = cl.getDeclaredConstructor().newInstance();
-            ModelView modelvue = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+            
+            Method m = o.getClass().getMethod(map.getMethod());
+            Object object = m.invoke(o);
+            if(object instanceof ModelView){
+                ModelView model = (ModelView) object;
+                HashMap<String, Object> data = model.getData();
+                for(Map.Entry element : data.entrySet()){
+                    req.setAttribute((String)element.getKey(), element.getValue());
+                } 
 
-            RequestDispatcher dispatch = req.getRequestDispatcher(modelvue.getUrl());
-            dispatch.forward(req, res);
+                RequestDispatcher dispatch = req.getRequestDispatcher(model.getUrl());
+                dispatch.forward(req, res);
+
+            }
+            
 
         } catch (Exception e) {
             e.printStackTrace(out);
