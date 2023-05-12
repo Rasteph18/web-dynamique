@@ -1,6 +1,7 @@
 package etu1867.framework.servlet;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.servlet.*;
@@ -11,7 +12,10 @@ import annotation.AnnotationMethod;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.sql.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +83,52 @@ public class FrontServlet extends HttpServlet {
             
             Method m = o.getClass().getMethod(map.getMethod());
             Object object = m.invoke(o);
+            
+
+            Enumeration<String> enume = req.getParameterNames();
+
+            while(enume.hasMoreElements()) {
+                String n = enume.nextElement();
+                Field field = o.getClass().getDeclaredField(n);
+                if(field == null){
+                    continue;
+                }
+
+                Object value = null;
+                Class<?> parameterType = o.getClass().getDeclaredMethod("set" + n , field.getType()).getParameterTypes()[0];
+
+                if (parameterType == String.class) {
+                    value = req.getParameter(n);
+                } else if (parameterType == int.class || parameterType == Integer.class) {
+                    value = Integer.parseInt(req.getParameter(n));
+                } else if (parameterType == double.class || parameterType == Double.class) {
+                    value = Double.parseDouble(req.getParameter(n));
+                } else if (parameterType == float.class || parameterType == Float.class) {
+                    value = Float.parseFloat(req.getParameter(n));
+                } else if (parameterType == boolean.class || parameterType == Boolean.class) {
+                    value = Boolean.parseBoolean(req.getParameter(n));
+                } else if (parameterType == java.sql.Date.class) {
+                    String sDate = req.getParameter(n);
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date date = format.parse(sDate); 
+                    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+                    value = sqlDate;
+                } else if (parameterType == java.util.Date.class) {
+                    String sDate = req.getParameter(n);
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date date = format.parse(sDate);
+                    value = date;
+                } else {
+                    // Autres types de données peuvent être gérés de manière similaire
+                    throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
+                }
+
+                o.getClass().getDeclaredMethod("set" + n, parameterType).invoke(o, value);
+
+                
+            }
+            out.print(o.getClass().getDeclaredMethod("save").invoke(o));
+
             if(object instanceof ModelView){
                 ModelView model = (ModelView) object;
                 HashMap<String, Object> data = model.getData();
