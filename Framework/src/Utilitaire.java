@@ -8,6 +8,9 @@ import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
+import java.sql.Date;
 
 
 public class Utilitaire {
@@ -57,6 +60,41 @@ public class Utilitaire {
         }
 
         return classes;
+    }
+
+    public Object cast(Class<?> parameterType, HttpServletRequest req, String n)
+    {
+        Object value = null;
+
+        try{
+            if (parameterType == String.class) {
+                value = req.getParameter(n);
+            } else if (parameterType == int.class || parameterType == Integer.class) {
+                value = Integer.parseInt(req.getParameter(n));
+            } else if (parameterType == double.class || parameterType == Double.class) {
+                value = Double.parseDouble(req.getParameter(n));
+            } else if (parameterType == float.class || parameterType == Float.class) {
+                value = Float.parseFloat(req.getParameter(n));
+            } else if (parameterType == boolean.class || parameterType == Boolean.class) {
+                value = Boolean.parseBoolean(req.getParameter(n));
+            } else if (parameterType == java.sql.Date.class) {
+                String sDate = req.getParameter(n);
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date date = format.parse(sDate); 
+                java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+                value = sqlDate;
+            } else if (parameterType == java.util.Date.class) {
+                String sDate = req.getParameter(n);
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date date = format.parse(sDate);
+                value = date;
+            } 
+        } catch(Exception e) {
+            throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
+        }
+       
+
+        return value;
     }
 
 }

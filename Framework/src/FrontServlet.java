@@ -18,6 +18,7 @@ import java.sql.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 import etu1867.framework.*;
 import utils.Utilitaire;
@@ -81,12 +82,23 @@ public class FrontServlet extends HttpServlet {
             Class cl = Class.forName(map.getClassName());
             Object o = cl.getDeclaredConstructor().newInstance();
             
-            Method m = o.getClass().getMethod(map.getMethod());
-            Object object = m.invoke(o);
+            Method m = null;
+            Method[] allMethod = o.getClass().getDeclaredMethods();
+            for(Method met : allMethod)
+            {
+                if(map.getMethod().equals(met.getName()))
+                {
+                    m = met;
+                }
+            }
+            //Object object = m.invoke(o);
             
 
             Enumeration<String> enume = req.getParameterNames();
 
+            ModelView model = null;
+
+            //sprint 7
             while(enume.hasMoreElements()) {
                 String n = enume.nextElement();
                 Field field = o.getClass().getDeclaredField(n);
@@ -97,49 +109,45 @@ public class FrontServlet extends HttpServlet {
                 Object value = null;
                 Class<?> parameterType = o.getClass().getDeclaredMethod("set" + n , field.getType()).getParameterTypes()[0];
 
-                if (parameterType == String.class) {
-                    value = req.getParameter(n);
-                } else if (parameterType == int.class || parameterType == Integer.class) {
-                    value = Integer.parseInt(req.getParameter(n));
-                } else if (parameterType == double.class || parameterType == Double.class) {
-                    value = Double.parseDouble(req.getParameter(n));
-                } else if (parameterType == float.class || parameterType == Float.class) {
-                    value = Float.parseFloat(req.getParameter(n));
-                } else if (parameterType == boolean.class || parameterType == Boolean.class) {
-                    value = Boolean.parseBoolean(req.getParameter(n));
-                } else if (parameterType == java.sql.Date.class) {
-                    String sDate = req.getParameter(n);
-                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    java.util.Date date = format.parse(sDate); 
-                    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-                    value = sqlDate;
-                } else if (parameterType == java.util.Date.class) {
-                    String sDate = req.getParameter(n);
-                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    java.util.Date date = format.parse(sDate);
-                    value = date;
-                } else {
-                    // Autres types de données peuvent être gérés de manière similaire
-                    throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
-                }
+                value = util.cast(parameterType, req, n);
 
                 o.getClass().getDeclaredMethod("set" + n, parameterType).invoke(o, value);
-
-                
             }
-            out.print(o.getClass().getDeclaredMethod("save").invoke(o));
+            //out.print(o.getClass().getDeclaredMethod("save").invoke(o));
 
-            if(object instanceof ModelView){
-                ModelView model = (ModelView) object;
+
+            //sprint 8
+            ArrayList<Class<?>> typeParam = new ArrayList<Class<?>>();
+
+            Class<?>[] param = m.getParameterTypes();
+            ArrayList<Object> val = new ArrayList<>();
+            if(param.length != 0)
+            {
+                typeParam.addAll(new ArrayList<>(Arrays.asList(param)));
+                String[] p = m.getAnnotation(AnnotationMethod.class).param().split(",");
+                for(int i = 0; i < param.length; i++)
+                {
+                    val.add(util.cast(param[i], req, p[i]));
+                }
+                model = (ModelView) o.getClass().getMethod(map.getMethod(), param).invoke(o, val.toArray());
+            }
+            else {
+                model = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+            }
+            
+            
+
+            
+            //if(object instanceof ModelView){
+                //ModelView model = (ModelView) object;
                 HashMap<String, Object> data = model.getData();
                 for(Map.Entry element : data.entrySet()){
                     req.setAttribute((String)element.getKey(), element.getValue());
                 } 
+            //}
 
-                RequestDispatcher dispatch = req.getRequestDispatcher(model.getUrl());
-                dispatch.forward(req, res);
-
-            }
+            RequestDispatcher dispatch = req.getRequestDispatcher(model.getUrl());
+            dispatch.forward(req, res);
             
 
         } catch (Exception e) {
