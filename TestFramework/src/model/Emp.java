@@ -53,6 +53,26 @@ public class Emp {
         return modelView;
     }
 
+    @AnnotationMethod(url="/insert", param="Nom,NumDept")
+    public ModelView insertEmp(String nom, int numDept)
+    {
+        ModelView modelView = new ModelView();
+        modelView.setUrl("insertEmp.jsp");
+        modelView.addItem("nom", nom);
+        modelView.addItem("numDept", numDept);
+
+        return modelView;
+    }
+
+    @AnnotationMethod(url="/upload")
+    public ModelView uploadFile()
+    {
+        ModelView modelView = new ModelView();
+        modelView.setUrl("testUpload.jsp");
+
+        return modelView;
+    }
+
 
     public String getNom() {
         return Nom;
