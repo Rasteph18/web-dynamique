@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AnnotationMethod {
     public String url();
+    public String param() default "";
     
 }
