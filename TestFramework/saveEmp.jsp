@@ -2,7 +2,7 @@
 <%@ page import = "model.*" %>
 <%@ page import = "java.util.ArrayList" %>
 
-<h3>Inserer avec succes</h3>
+<h3>Save</h3>
 <%
     Emp e = (Emp)request.getAttribute("emp");
 %>

@@ -2,6 +2,10 @@ package utils;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.servlet.http.Part;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -11,6 +15,8 @@ import java.util.Vector;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.sql.Date;
+import java.lang.Byte;
+
 
 
 public class Utilitaire {
@@ -95,6 +101,47 @@ public class Utilitaire {
        
 
         return value;
+    }
+
+    public static byte[] getFileBytes(Part filePart) throws Exception {
+        InputStream fileInputStream = filePart.getInputStream();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+
+        byte[] fileBytes = outputStream.toByteArray();
+
+        fileInputStream.close();
+        outputStream.close();
+
+        return fileBytes;
+    }
+
+    public static String getFileName(Part part) {
+        String contentDisposition = part.getHeader("content-disposition");
+        String[] tokens = contentDisposition.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 1).trim().replace("\"", "");
+            }
+        }
+        return null;
+    }
+
+    public static String getFilePath(Part part) {
+        String contentDisposition = part.getHeader("content-disposition");
+        String[] tokens = contentDisposition.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 1).trim().replace("\"", "");
+            }
+        }
+        return null;
     }
 
 }

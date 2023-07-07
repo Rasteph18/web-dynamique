@@ -19,11 +19,15 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
+import java.lang.Byte;
+import javax.servlet.annotation.MultipartConfig;
 
 import etu1867.framework.*;
+import utils.FileUpload;
 import utils.Utilitaire;
 import modelView.*;
 
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
 
     HashMap<String,Mapping> MappingUrls;
@@ -63,6 +67,7 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
+    
     protected void processRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
     {
         PrintWriter out  = res.getWriter();
@@ -135,7 +140,24 @@ public class FrontServlet extends HttpServlet {
                 model = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
             }
             
-            
+            //sprint 9
+            String contentType = req.getContentType();
+            if(contentType != null && contentType.startsWith("multipart/form-data")){
+                for(Part part : req.getParts())
+                {
+                    String nameFile = util.getFileName(part);
+                    String path = util.getFilePath(part);
+                    byte[] tabByte = util.getFileBytes(part);
+
+                    FileUpload upload = new FileUpload();
+                    upload.setNameFile(nameFile);
+                    upload.setPath(path);
+                    upload.setTabByte(tabByte);
+                    
+                    model.addItem("upload", upload);
+                }
+
+            }
 
             
             //if(object instanceof ModelView){
